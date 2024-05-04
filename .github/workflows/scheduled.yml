@@ -17,8 +17,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Fetch homebrew/cask
+        run: curl https://formulae.brew.sh/api/cask.json > raw.json
+
       - name: Update data for homebrew/cask
-        run: curl https://formulae.brew.sh/api/cask.json > cask.json
+        run: (printf '[\n'; jq -c 'map(del(.tap_git_head,.tap,.installed_time,.installed,.ruby_source_path,.ruby_source_checksum))[]' raw.json | sed 's/^/\t/;s/$/,/' | head -c -2; printf '\n]\n') > cask.json && rm raw.json
 
       - name: Push changes
         uses: EndBug/add-and-commit@v9
