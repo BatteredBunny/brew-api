@@ -8,14 +8,20 @@ on:
     - cron: "0 * * * *"
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   save-api:
     name: Save api output
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: true
 
       - name: Fetch homebrew/cask
         run: curl https://formulae.brew.sh/api/cask.json > raw.json
@@ -24,7 +30,7 @@ jobs:
         run: (printf '[\n'; jq -c 'map(del(.tap_git_head,.tap,.installed_time,.installed,.ruby_source_path,.ruby_source_checksum))[]' raw.json | sed 's/^/\t/;s/$/,/' | head -c -2; printf '\n]\n') > cask.json && rm raw.json
 
       - name: Push changes
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9
         with:
           add: '.'
           message: 'Update api output'
